@@ -3,7 +3,9 @@
 #----------------------------------------------------------------------------#
 
 import json
+from typing import final
 import dateutil.parser
+from sqlalchemy.orm import query
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
@@ -13,6 +15,7 @@ from flask_wtf import Form
 from forms import *
 from models import Venue, Artist, Show, db
 from flask_migrate import Migrate
+import sys
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -57,28 +60,36 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "city": "San Francisco",
-        "state": "CA",
-        "venues": [{
-            "id": 1,
-            "name": "The Musical Hop",
-            "num_upcoming_shows": 0,
-        }, {
-            "id": 3,
-            "name": "Park Square Live Music & Coffee",
-            "num_upcoming_shows": 1,
-        }]
-    }, {
-        "city": "New York",
-        "state": "NY",
-        "venues": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }]
-    return render_template('pages/venues.html', areas=data)
+    try:
+        query = Venue.query.all()
+        places = Venue.query.distinct(Venue.city, Venue.state).all()
+        areas = []
+
+        for place in places:
+            venuesList = []
+            for venue in query:
+                if venue.city == place.city and venue.state == place.state:
+                    showsCount = len(
+                        [show for show in venue.shows if show.start_time > datetime.now()]
+                    )
+                    venuesList.append({
+                        'id': venue.id,
+                        'name': venue.name,
+                        'num_upcoming_shows': showsCount
+                    })
+            areas.append({
+                'city': place.city,
+                'state': place.state,
+                'venues': venuesList
+            })
+        return render_template('pages/venues.html', areas=areas)
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+        flash('An error occurred')
+        return redirect(url_for('index'))
+    finally:
+        db.session.close()
 
 
 @app.route('/venues/search', methods=['POST'])
