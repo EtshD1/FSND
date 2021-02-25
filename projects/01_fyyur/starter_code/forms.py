@@ -178,6 +178,9 @@ class ArtistForm(FlaskForm):
         'state', validators=[DataRequired()],
         choices=State.choices()
     )
+    address = StringField(
+        'address', validators=[DataRequired()]
+    )
     phone = StringField(
         # TODO implement validation logic for state
         'phone', validators=[DataRequired()]
