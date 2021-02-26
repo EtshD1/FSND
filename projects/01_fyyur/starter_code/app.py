@@ -601,7 +601,7 @@ def create_show_submission():
             # Check if venue is available for date
             if venueShowList:
                 for show in venueShowList:
-                    d2 = datetime.datetime.strptime(
+                    d2 = datetime.strptime(
                         show.time, '%Y-%m-%d %H:%M:%S').date()
                     if d2 == d1:
                         flash("Sorry venue is already booked at date!")
@@ -609,7 +609,7 @@ def create_show_submission():
             # Check if artist is available for date
             if artistShowList:
                 for show in artistShowList:
-                    d2 = datetime.datetime.strptime(
+                    d2 = datetime.strptime(
                         show.time, '%Y-%m-%d %H:%M:%S').date()
                     if d2 == d1:
                         flash("Sorry artist is already booked at date!")
