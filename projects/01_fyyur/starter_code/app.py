@@ -596,21 +596,18 @@ def create_show_submission():
         start_time = form.start_time.data
 
         if isDate(start_time):
-            d1 = datetime.strftime(
-                start_time, '%Y-%m-%d %H:%M:%S')
+            d1 = start_time
             # Check if venue is available for date
             if venueShowList:
                 for show in venueShowList:
-                    d2 = datetime.strptime(
-                        show.time, '%Y-%m-%d %H:%M:%S').date()
+                    d2 = show.start_time
                     if d2 == d1:
                         flash("Sorry venue is already booked at date!")
                         return redirect(url_for('create_shows'))
             # Check if artist is available for date
             if artistShowList:
                 for show in artistShowList:
-                    d2 = datetime.strptime(
-                        show.time, '%Y-%m-%d %H:%M:%S').date()
+                    d2 = show.start_time
                     if d2 == d1:
                         flash("Sorry artist is already booked at date!")
                         return redirect(url_for('create_shows'))
