@@ -198,32 +198,40 @@ def create_venue_form():
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
-    try:
-        form = VenueForm(request.form)
-        newVenue = Venue(
-            name=form.name.data,
-            genres=form.genres.data,
-            city=form.city.data,
-            state=form.state.data,
-            address=form.address.data,
-            phone=form.phone.data,
-            image_link=form.image_link.data,
-            facebook_link=form.facebook_link.data,
-            seeking_talent=form.seeking_talent.data,
-            seeking_description=form.seeking_description.data,
-            website=form.website.data,
-        )
-        db.session.add(newVenue)
-        db.session.commit()
-        flash('Venue ' + request.form['name'] + ' was successfully listed!')
-        return redirect(url_for("show_venue", venue_id=newVenue.id))
-    except:
-        db.session.rollback()
-        print(sys.exc_info())
-        flash("Sorry, An error occurred")
+    form = VenueForm(request.form, csrf_enabled=False)
+    if form.validate():
+        try:
+            newVenue = Venue(
+                name=form.name.data,
+                genres=form.genres.data,
+                city=form.city.data,
+                state=form.state.data,
+                address=form.address.data,
+                phone=form.phone.data,
+                image_link=form.image_link.data,
+                facebook_link=form.facebook_link.data,
+                seeking_talent=form.seeking_talent.data,
+                seeking_description=form.seeking_description.data,
+                website=form.website.data,
+            )
+            db.session.add(newVenue)
+            db.session.commit()
+            flash('Venue ' + request.form['name'] +
+                  ' was successfully listed!')
+            return redirect(url_for("show_venue", venue_id=newVenue.id))
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            flash("Sorry, An error occurred")
+            return redirect(url_for("index"))
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
         return redirect(url_for("index"))
-    finally:
-        db.session.close()
     # on successful db insert, flash success
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -403,29 +411,37 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
     # TODO: take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
-    try:
-        form = ArtistForm(request.form)
-        artistEdit = Artist.query.get(artist_id)
-        artistEdit.name = form.name.data
-        artistEdit.genres = form.genres.data
-        artistEdit.city = form.city.data
-        artistEdit.state = form.state.data
-        artistEdit.phone = form.phone.data
-        artistEdit.website = form.website.data
-        artistEdit.facebook_link = form.facebook_link.data
-        artistEdit.seeking_venue = form.seeking_venue.data
-        artistEdit.seeking_description = form.seeking_description.data
-        artistEdit.image_link = form.image_link.data
-        db.session.commit()
-        flash("Artist have been edited.")
-        return redirect(url_for("show_artist", artist_id=artist_id))
-    except:
-        db.session.rollback()
-        print(sys.exc_info())
-        flash("Sorry! An error occured.")
-        return redirect(url_for("show_artist", artist_id=artist_id))
-    finally:
-        db.session.close()
+    form = ArtistForm(request.form, csrf_enabled=False)
+    if form.validate():
+        try:
+            artistEdit = Artist.query.get(artist_id)
+            artistEdit.name = form.name.data
+            artistEdit.genres = form.genres.data
+            artistEdit.city = form.city.data
+            artistEdit.state = form.state.data
+            artistEdit.phone = form.phone.data
+            artistEdit.website = form.website.data
+            artistEdit.facebook_link = form.facebook_link.data
+            artistEdit.seeking_venue = form.seeking_venue.data
+            artistEdit.seeking_description = form.seeking_description.data
+            artistEdit.image_link = form.image_link.data
+            db.session.commit()
+            flash("Artist have been edited.")
+            return redirect(url_for("show_artist", artist_id=artist_id))
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            flash("Sorry! An error occured.")
+            return redirect(url_for("show_artist", artist_id=artist_id))
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
+
+        return redirect(url_for('index'))
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -464,29 +480,37 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
     # TODO: take values from the form submitted, and update existing
     # venue record with ID <venue_id> using the new attributes
-    try:
-        form = VenueForm(request.form)
-        venueEdit = Venue.query.get(venue_id)
-        venueEdit.name = form.name.data
-        venueEdit.genres = form.genres.data
-        venueEdit.city = form.city.data
-        venueEdit.state = form.state.data
-        venueEdit.phone = form.phone.data
-        venueEdit.website = form.website.data
-        venueEdit.facebook_link = form.facebook_link.data
-        venueEdit.seeking_talent = form.seeking_talent.data
-        venueEdit.seeking_description = form.seeking_description.data
-        venueEdit.image_link = form.image_link.data
-        db.session.commit()
-        flash("Venue has been edited.")
-        return redirect(url_for("show_venue", venue_id=venue_id))
-    except:
-        db.session.rollback()
-        print(sys.exc_info())
-        flash("Sorry! An error occured.")
-        return redirect(url_for("show_venue", venue_id=venue_id))
-    finally:
-        db.session.close()
+    form = VenueForm(request.form, csrf_enabled=False)
+    if form.validate():
+        try:
+            venueEdit = Venue.query.get(venue_id)
+            venueEdit.name = form.name.data
+            venueEdit.genres = form.genres.data
+            venueEdit.city = form.city.data
+            venueEdit.state = form.state.data
+            venueEdit.phone = form.phone.data
+            venueEdit.website = form.website.data
+            venueEdit.facebook_link = form.facebook_link.data
+            venueEdit.seeking_talent = form.seeking_talent.data
+            venueEdit.seeking_description = form.seeking_description.data
+            venueEdit.image_link = form.image_link.data
+            db.session.commit()
+            flash("Venue has been edited.")
+            return redirect(url_for("show_venue", venue_id=venue_id))
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            flash("Sorry! An error occured.")
+            return redirect(url_for("show_venue", venue_id=venue_id))
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
+
+        return redirect(url_for('index'))
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -503,32 +527,41 @@ def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
-    try:
-        form = ArtistForm(request.form)
-        newArtist = Artist(
-            name=form.name.data,
-            genres=form.genres.data,
-            city=form.city.data,
-            state=form.state.data,
-            address=form.address.data,
-            phone=form.phone.data,
-            image_link=form.image_link.data,
-            facebook_link=form.facebook_link.data,
-            seeking_venue=form.seeking_venue.data,
-            seeking_description=form.seeking_description.data,
-            website=form.website.data,
-        )
-        db.session.add(newArtist)
-        db.session.commit()
-        flash('Artist ' + request.form['name'] + ' was successfully listed!')
-        return redirect(url_for("show_artist", artist_id=newArtist.id))
-    except:
-        db.session.rollback()
-        print(sys.exc_info())
-        flash('Sorry an error occurred')
-        return redirect(url_for("index"))
-    finally:
-        db.session.close()
+    form = ArtistForm(request.form, csrf_enabled=False)
+    if form.validate():
+        try:
+            newArtist = Artist(
+                name=form.name.data,
+                genres=form.genres.data,
+                city=form.city.data,
+                state=form.state.data,
+                address=form.address.data,
+                phone=form.phone.data,
+                image_link=form.image_link.data,
+                facebook_link=form.facebook_link.data,
+                seeking_venue=form.seeking_venue.data,
+                seeking_description=form.seeking_description.data,
+                website=form.website.data,
+            )
+            db.session.add(newArtist)
+            db.session.commit()
+            flash('Artist ' + request.form['name'] +
+                  ' was successfully listed!')
+            return redirect(url_for("show_artist", artist_id=newArtist.id))
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            flash('Sorry an error occurred')
+            return redirect(url_for("index"))
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
+
+        return redirect(url_for('index'))
     # on successful db insert, flash success
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
