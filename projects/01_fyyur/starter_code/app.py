@@ -8,7 +8,13 @@ from typing import final
 import dateutil.parser
 from sqlalchemy.orm import query
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (Flask,
+                   render_template,
+                   request,
+                   Response,
+                   flash,
+                   redirect,
+                   url_for)
 from flask_moment import Moment
 import logging
 from logging import Formatter, FileHandler
@@ -129,53 +135,57 @@ def show_venue(venue_id):
     try:
         venue = Venue.query.get(venue_id)
 
-        past_shows_query = db.session.query(Artist, Show).join(Show).join(Venue).\
-            filter(
-            Show.venue_id == venue_id,
-            Show.artist_id == Artist.id,
-            Show.start_time < datetime.now()
-        ).all()
-        past_shows = []
-        for artist, show in past_shows_query:
-            past_shows.append({
-                'artist_id': artist.id,
-                'artist_name': artist.name,
-                'artist_image_link': artist.image_link,
-                'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
-            })
+        if venue:
+            past_shows_query = db.session.query(Artist, Show).join(Show).join(Venue).\
+                filter(
+                Show.venue_id == venue_id,
+                Show.artist_id == Artist.id,
+                Show.start_time < datetime.now()
+            ).all()
+            past_shows = []
+            for artist, show in past_shows_query:
+                past_shows.append({
+                    'artist_id': artist.id,
+                    'artist_name': artist.name,
+                    'artist_image_link': artist.image_link,
+                    'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
+                })
 
-        upcoming_shows_query = db.session.query(Artist, Show).join(Show).join(Venue).filter(
-            Show.venue_id == venue_id,
-            Show.artist_id == Artist.id,
-            Show.start_time > datetime.now()
-        ).all()
-        upcoming_shows = []
-        for artist, show in upcoming_shows_query:
-            upcoming_shows.append({
-                'artist_id': artist.id,
-                'artist_name': artist.name,
-                'artist_image_link': artist.image_link,
-                'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
-            })
+            upcoming_shows_query = db.session.query(Artist, Show).join(Show).join(Venue).filter(
+                Show.venue_id == venue_id,
+                Show.artist_id == Artist.id,
+                Show.start_time > datetime.now()
+            ).all()
+            upcoming_shows = []
+            for artist, show in upcoming_shows_query:
+                upcoming_shows.append({
+                    'artist_id': artist.id,
+                    'artist_name': artist.name,
+                    'artist_image_link': artist.image_link,
+                    'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
+                })
 
-        data = {
-            "id": venue.id,
-            "name": venue.name,
-            "city": venue.city,
-            "state": venue.state,
-            "address": venue.address,
-            "phone": venue.phone,
-            "image_link": venue.image_link,
-            "facebook_link": venue.facebook_link,
-            "website": venue.website,
-            "seeking_talent": venue.seeking_talent,
-            "seeking_description": venue.seeking_description,
-            'past_shows': past_shows,
-            'upcoming_shows': upcoming_shows,
-            'past_shows_count': len(past_shows),
-            'upcoming_shows_count': len(upcoming_shows)
-        }
-        return render_template('pages/show_venue.html', venue=data)
+            data = {
+                "id": venue.id,
+                "name": venue.name,
+                "city": venue.city,
+                "state": venue.state,
+                "address": venue.address,
+                "phone": venue.phone,
+                "image_link": venue.image_link,
+                "facebook_link": venue.facebook_link,
+                "website": venue.website,
+                "seeking_talent": venue.seeking_talent,
+                "seeking_description": venue.seeking_description,
+                'past_shows': past_shows,
+                'upcoming_shows': upcoming_shows,
+                'past_shows_count': len(past_shows),
+                'upcoming_shows_count': len(upcoming_shows)
+            }
+            return render_template('pages/show_venue.html', venue=data)
+        else:
+            flash("Sorry! Venue not found!")
+            return redirect(url_for('index'))
     except:
         db.session.rollback()
         print(sys.exc_info())
@@ -314,53 +324,57 @@ def show_artist(artist_id):
     try:
         artist = Artist.query.get(artist_id)
 
-        past_shows_query = db.session.query(Venue, Show).join(Show).join(Artist).\
-            filter(
-            Show.artist_id == artist_id,
-            Show.venue_id == Venue.id,
-            Show.start_time < datetime.now()
-        ).all()
-        past_shows = []
-        for artist, show in past_shows_query:
-            past_shows.append({
-                'venue_id': artist.id,
-                'venue_name': artist.name,
-                'venue_image_link': artist.image_link,
-                'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
-            })
+        if artist:
+            past_shows_query = db.session.query(Venue, Show).join(Show).join(Artist).\
+                filter(
+                Show.artist_id == artist_id,
+                Show.venue_id == Venue.id,
+                Show.start_time < datetime.now()
+            ).all()
+            past_shows = []
+            for venue, show in past_shows_query:
+                past_shows.append({
+                    'venue_id': venue.id,
+                    'venue_name': venue.name,
+                    'venue_image_link': venue.image_link,
+                    'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
+                })
 
-        upcoming_shows_query = db.session.query(Venue, Show).join(Show).join(Artist).\
-            filter(
-            Show.artist_id == artist_id,
-            Show.venue_id == Venue.id,
-            Show.start_time > datetime.now()
-        ).all()
-        upcoming_shows = []
-        for artist, show in upcoming_shows_query:
-            upcoming_shows.append({
-                'venue_id': artist.id,
-                'venue_name': artist.name,
-                'venue_image_link': artist.image_link,
-                'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
-            })
-        data = {
-            "id": artist.id,
-            "name": artist.name,
-            "city": artist.city,
-            "state": artist.state,
-            "address": artist.address,
-            "phone": artist.phone,
-            "image_link": artist.image_link,
-            "facebook_link": artist.facebook_link,
-            "website": artist.website,
-            "seeking_venue": artist.seeking_venue,
-            "seeking_description": artist.seeking_description,
-            'past_shows': past_shows,
-            'upcoming_shows': upcoming_shows,
-            'past_shows_count': len(past_shows),
-            'upcoming_shows_count': len(upcoming_shows)
-        }
-        return render_template('pages/show_artist.html', artist=data)
+            upcoming_shows_query = db.session.query(Venue, Show).join(Show).join(Artist).\
+                filter(
+                Show.artist_id == artist_id,
+                Show.venue_id == Venue.id,
+                Show.start_time > datetime.now()
+            ).all()
+            upcoming_shows = []
+            for venue, show in upcoming_shows_query:
+                upcoming_shows.append({
+                    'venue_id': venue.id,
+                    'venue_name': venue.name,
+                    'venue_image_link': venue.image_link,
+                    'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
+                })
+            data = {
+                "id": artist.id,
+                "name": artist.name,
+                "city": artist.city,
+                "state": artist.state,
+                "address": artist.address,
+                "phone": artist.phone,
+                "image_link": artist.image_link,
+                "facebook_link": artist.facebook_link,
+                "website": artist.website,
+                "seeking_venue": artist.seeking_venue,
+                "seeking_description": artist.seeking_description,
+                'past_shows': past_shows,
+                'upcoming_shows': upcoming_shows,
+                'past_shows_count': len(past_shows),
+                'upcoming_shows_count': len(upcoming_shows)
+            }
+            return render_template('pages/show_artist.html', artist=data)
+        else:
+            flash("Sorry! Artist not found.")
+            return redirect(url_for('index'))
     except:
         db.session.rollback()
         print(sys.exc_info())
